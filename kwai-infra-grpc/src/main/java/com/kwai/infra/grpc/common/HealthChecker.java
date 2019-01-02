@@ -60,7 +60,7 @@ public class HealthChecker implements Closeable {
                 entry.getValue().closeGracefully();
                 LOGGER.info("server key {} -- remove failed instance: {}", entry.getValue());
             });
-        }, 5, TimeUnit.MINUTES);
+        }, 10, TimeUnit.SECONDS);
     }
 
     @Override
