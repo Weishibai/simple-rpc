@@ -91,4 +91,10 @@ public class GrpcServerContext implements Closeable {
             closed.compareAndSet(false, true);
         }
     }
+
+    @Override
+    public String toString() {
+        return "channel state " + closed.get()
+                + " , remote server " + channel.toString();
+    }
 }

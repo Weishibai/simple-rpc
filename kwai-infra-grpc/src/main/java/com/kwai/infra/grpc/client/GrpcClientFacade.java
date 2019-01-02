@@ -7,9 +7,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
+import org.springframework.beans.factory.DisposableBean;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.kwai.infra.grpc.common.HealthChecker;
 import com.kwai.infra.grpc.common.RemoteServer;
 import com.kwai.infra.grpc.common.config.GrpcConfigurer;
 
@@ -22,25 +25,26 @@ import io.grpc.ManagedChannel;
  * @author weishibai
  * @date 2019/01/01 9:49 AM
  */
-public class GrpcClientFacade {
+public class GrpcClientFacade implements DisposableBean {
 
     private List<ClientInterceptor> clientInterceptors;
 
     private static ProviderSelector providerSelector;
 
+    private final HealthChecker healthChecker;
+
+    private final ConcurrentMap<String, Collection<GrpcServerContext>> serverMap;
+
     public GrpcClientFacade(GrpcConfigurer configurer, List<ClientInterceptor> interceptors) {
         Preconditions.checkArgument(null != configurer, "illegal rpc configurer");
         this.clientInterceptors = interceptors;
-        providerSelector = new FailoverProviderSelector(build(configurer, clientInterceptors));
 
-        /* add shutdown hook */
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            try {
-                providerSelector.close();
-            } catch (IOException e) {
-                //ig
-            }
-        }));
+        this.serverMap = build(configurer, clientInterceptors);
+        providerSelector = new RandomProviderSelector(serverMap);
+
+        /* health check */
+        healthChecker = new HealthChecker(serverMap);
+        healthChecker.check();
     }
 
     public static GrpcServerContext request(String serverKey) {
@@ -60,8 +64,13 @@ public class GrpcClientFacade {
         return serverMap;
     }
 
-
-
-
-
+    @Override
+    public void destroy() throws Exception {
+        try {
+            healthChecker.close();
+            serverMap.values().stream().flatMap(Collection::stream).forEach(GrpcServerContext::closeGracefully);
+        } catch (IOException e) {
+            //ig
+        }
+    }
 }
