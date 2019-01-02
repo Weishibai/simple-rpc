@@ -1,0 +1,23 @@
+{
+  "hints": [],
+  "groups": [
+    {
+      "sourceType": "com.kwai.infra.grpc.common.config.GrpcConfigurer",
+      "name": "spring.grpc",
+      "type": "com.kwai.infra.grpc.common.config.GrpcConfigurer"
+    }
+  ],
+  "properties": [
+    {
+      "name": "spring.grpc.enable",
+      "type": "java.lang.Boolean",
+      "sourceType": "com.kwai.infra.grpc.common.config.GrpcConfigurer"
+    },
+    {
+      "name": "spring.grpc.port",
+      "type": "java.lang.Integer",
+      "sourceType": "com.kwai.infra.grpc.common.config.GrpcConfigurer",
+      "defaultValue": 10800
+    }
+  ]
+}

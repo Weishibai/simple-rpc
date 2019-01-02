@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+option java_package = "com.kwai.infra.grpc";
+option java_outer_classname = "GrpcInfraService";
+option java_multiple_files = false;
+
+// 定义通用的 Grpc 服务
+service InfraService {
+    // 处理请求
+    rpc handle (InfraRequest) returns (InfraResponse);
+}
+
+// 定义通用的 Grpc 请求体
+message InfraRequest {
+    bytes request = 1;
+}
+
+// 定义通用的 Grpc 响应体
+message InfraResponse {
+    bytes response = 1;
+}
